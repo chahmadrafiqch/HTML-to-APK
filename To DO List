@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --background: #ffffff;
+            --foreground: #1f2937;
+            --card: #f9fafb;
+            --border: #e5e7eb;
+            --muted: #6b7280;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        [data-theme="dark"] {
+            --primary: #60a5fa;
+            --primary-dark: #3b82f6;
+            --background: #111827;
+            --foreground: #f9fafb;
+            --card: #1f2937;
+            --border: #374151;
+            --muted: #9ca3af;
+            --danger: #f87171;
+            --success: #34d399;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .auth-buttons button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--foreground);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--card);
+        }
+
+        /* Main Layout */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            border-right: 1px solid var(--border);
+            padding-right: 1rem;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .filter-list {
+            list-style: none;
+        }
+
+        .filter-list li {
+            padding: 0.5rem 0;
+            cursor: pointer;
+            border-radius: 0.25rem;
+            padding-left: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-list li:hover, .filter-list li.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .categories {
+            margin-top: 2rem;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: var(--card);
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border);
+        }
+
+        .category-tag:hover, .category-tag.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Main Content */
+        .search-bar {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            background-color: var(--card);
+            color: var(--foreground);
+            transition: all 0.2s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-bar button {
+            margin-left: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-bar button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .task-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .task-card {
+            background-color: var(--card);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            transition: all 0.2s ease;
+        }
+
+        .task-card:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-checkbox {
+            margin-right: 1rem;
+            margin-top: 0.25rem;
+            cursor: pointer;
+            width: 1.1rem;
+            height: 1.1rem;
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .task-description {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-meta {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .task-due-date {
+            margin-right: 1rem;
+        }
+
+        .task-priority {
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .priority-high {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+
+        .priority-medium {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background-color: #ecfdf5;
+            color: var(--success);
+        }
+
+        .task-actions {
+            display: flex;
+        }
+
+        .task-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            margin-left: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .task-actions button:hover {
+            color: var(--primary);
+        }
+
+        /* Add Task Button */
+        .add-task-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .add-task-btn:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.05);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background-color: var(--background);
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 500px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-header button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.2s ease;
+        }
+
+        .modal-header button:hover {
+            color: var(--foreground);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.25rem;
+            background-color: var(--card);
+            color: var(--foreground);
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .form-actions button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        /* Auth Modal */
+        .auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .auth-modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .auth-content {
+            background-color: var(--background);
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .auth-modal.active .auth-content {
+            transform: translateY(0);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: var(--muted);
+        }
+
+        .auth-form .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .auth-footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-bottom: 1rem;
+                margin-bottom: 1rem;
+                padding-right: 0;
+            }
+
+            .add-task-btn, .theme-toggle {
+                width: 2.5rem;
+                height: 2.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .logged-in {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .logout-btn:hover {
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Todo App</div>
+            <div class="auth-buttons" id="authButtons">
+                <button class="btn-outline" id="loginBtn">Login</button>
+                <button class="btn-primary" id="signupBtn">Sign Up</button>
+            </div>
+            <div class="logged-in hidden" id="loggedInUser">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+        </header>
+
+        <div class="app-layout">
+            <aside class="sidebar">
+                <h3>Filters</h3>
+                <ul class="filter-list" id="filterList">
+                    <li class="active" data-filter="all">All Tasks</li>
+                    <li data-filter="today">Today</li>
+                    <li data-filter="important">Important</li>
+                    <li data-filter="completed">Completed</li>
+                </ul>
+
+                <div class="categories">
+                    <h3>Categories</h3>
+                    <div id="categoryList">
+                        <span class="category-tag" data-category="work">Work</span>
+                        <span class="category-tag" data-category="personal">Personal</span>
+                        <span class="category-tag" data-category="shopping">Shopping</span>
+                        <span class="category-tag" data-category="health">Health</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search tasks...">
+                    <button id="searchBtn">Search</button>
+                </div>
+
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will be rendered here -->
+                </div>
+            </main>
+        </div>
+
+        <button class="add-task-btn" id="addTaskBtn">+</button>
+        <button class="theme-toggle" id="themeToggle">🌓</button>
+
+        <!-- Task Modal -->
+        <div class="modal" id="taskModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="taskModalTitle">Add New Task</h2>
+                    <button id="closeModal">&times;</button>
+                </div>
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">Title</label>
+                        <input type="text" id="taskTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Categories</label>
+                        <div>
+                            <label><input type="checkbox" name="category" value="work"> Work</label>
+                            <label><input type="checkbox" name="category" value="personal"> Personal</label>
+                            <label><input type="checkbox" name="category" value="shopping"> Shopping</label>
+                            <label><input type="checkbox" name="category" value="health"> Health</label>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-outline" id="cancelTask">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div class="auth-modal" id="loginModal">
+            <div class="auth-content">
+                <div class="auth-header">
+                    <h2>Welcome Back</h2>
+                    <p>Login to access your tasks</p>
+                </div>
+                <form class="auth-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+                    </div>
+                </form>
+                <div class="auth-footer">
+                    Don't have an account? <a href="#" id="showSignup">Sign up</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signup Modal -->
+        <div class="auth-modal" id="signupModal">
+            <div class="auth-content">
+                <div class="auth-header">
+                    <h2>Create Account</h2>
+                    <p>Get started with your task management</p>
+                </div>
+                <form class="auth-form" id="signupForm">
+                    <div class="form-group">
+                        <label for="signupName">Name</label>
+                        <input type="text" id="signupName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupConfirmPassword">Confirm Password</label>
+                        <input type="password" id="signupConfirmPassword" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary" style="width: 100%;">Sign Up</button>
+                    </div>
+                </form>
+                <div class="auth-footer">
+                    Already have an account? <a href="#" id="showLogin">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskModal = document.getElementById('taskModal');
+        const closeModal = document.getElementById('closeModal');
+        const cancelTask = document.getElementById('cancelTask');
+        const taskForm = document.getElementById('taskForm');
+        const themeToggle = document.getElementById('themeToggle');
+        const taskList = document.getElementById('taskList');
+        const filterList = document.getElementById('filterList');
+        const categoryList = document.getElementById('categoryList');
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const authButtons = document.getElementById('authButtons');
+        const loggedInUser = document.getElementById('loggedInUser');
+        const userAvatar = document.getElementById('userAvatar');
+        const userName = document.getElementById('userName');
+        const loginModal = document.getElementById('loginModal');
+        const signupModal = document.getElementById('signupModal');
+        const showSignup = document.getElementById('showSignup');
+        const showLogin = document.getElementById('showLogin');
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const taskModalTitle = document.getElementById('taskModalTitle');
+        
+        // App State
+        let currentUser = null;
+        let tasks = [];
+        let currentFilter = 'all';
+        let currentCategory = null;
+        let currentSearch = '';
+        let editingTaskId = null;
+
+        // Sample data for demo
+        const sampleUsers = [
+            { id: 1, name: 'John Doe', email: 'john@example.com', password: 'password123' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com', password: 'password123' }
+        ];
+
+        const sampleTasks = [
+            {
+                id: 1,
+                userId: 1,
+                title: 'Complete project proposal',
+                description: 'Finish the project proposal document and send it to the client',
+                dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+                priority: 'high',
+                completed: false,
+                categories: ['work']
+            },
+            {
+                id: 2,
+                userId: 1,
+                title: 'Buy groceries',
+                description: 'Milk, eggs, bread, fruits',
+                dueDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], // Yesterday
+                priority: 'medium',
+                completed: true,
+                categories: ['shopping']
+            },
+            {
+                id: 3,
+                userId: 1,
+                title: 'Morning jog',
+                description: '30 minutes around the park',
+                dueDate: new Date().toISOString().split('T')[0], // Today
+                priority: 'low',
+                completed: false,
+                categories: ['personal', 'health']
+            },
+            {
+                id: 4,
+                userId: 2,
+                title: 'Team meeting',
+                description: 'Weekly team sync',
+                dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0], // Day after tomorrow
+                priority: 'medium',
+                completed: false,
+                categories: ['work']
+            }
+        ];
+
+        // Initialize tasks with sample data
+        tasks = [...sampleTasks];
+
+        // Event Listeners
+        addTaskBtn.addEventListener('click', () => {
+            editingTaskId = null;
+            taskModalTitle.textContent = 'Add New Task';
+            taskForm.reset();
+            taskModal.classList.add('active');
+            document.getElementById('taskTitle').focus();
+        });
+
+        closeModal.addEventListener('click', closeTaskModal);
+        cancelTask.addEventListener('click', closeTaskModal);
+
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const priority = document.getElementById('taskPriority').value;
+            const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(c => c.value);
+            
+            if (editingTaskId) {
+                // Update existing task
+                const taskIndex = tasks.findIndex(t => t.id === editingTaskId);
+                if (taskIndex !== -1) {
+                    tasks[taskIndex] = {
+                        ...tasks[taskIndex],
+                        title,
+                        description,
+                        dueDate,
+                        priority,
+                        categories
+                    };
+                }
+            } else {
+                // Add new task
+                const newTask = {
+                    id: Date.now(),
+                    userId: currentUser?.id || 1,
+                    title,
+                    description,
+                    dueDate,
+                    priority,
+                    completed: false,
+                    categories
+                };
+                
+                tasks.unshift(newTask);
+            }
+            
+            renderTasks();
+            closeTaskModal();
+        });
+
+        themeToggle.addEventListener('click', toggleTheme);
+
+        // Filter and category event listeners
+        filterList.addEventListener('click', (e) => {
+            if (e.target.tagName === 'LI') {
+                // Remove active class from all filters
+                document.querySelectorAll('#filterList li').forEach(li => {
+                    li.classList.remove('active');
+                });
+                
+                // Add active class to clicked filter
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.filter;
+                renderTasks();
+            }
+        });
+
+        categoryList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('category-tag')) {
+                // Toggle active class
+                if (currentCategory === e.target.dataset.category) {
+                    e.target.classList.remove('active');
+                    currentCategory = null;
+                } else {
+                    document.querySelectorAll('.category-tag').forEach(tag => {
+                        tag.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                    currentCategory = e.target.dataset.category;
+                }
+                renderTasks();
+            }
+        });
+
+        searchBtn.addEventListener('click', () => {
+            currentSearch = searchInput.value.trim().toLowerCase();
+            renderTasks();
+        });
+
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                currentSearch = searchInput.value.trim().toLowerCase();
+                renderTasks();
+            }
+        });
+
+        // Auth event listeners
+        loginBtn.addEventListener('click', () => {
+            loginModal.classList.add('active');
+        });
+
+        signupBtn.addEventListener('click', () => {
+            signupModal.classList.add('active');
+        });
+
+        logoutBtn.addEventListener('click', logout);
+
+        showSignup.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginModal.classList.remove('active');
+            signupModal.classList.add('active');
+        });
+
+        showLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            signupModal.classList.remove('active');
+            loginModal.classList.add('active');
+        });
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Simple validation
+            const user = sampleUsers.find(u => u.email === email && u.password === password);
+            if (user) {
+                login(user);
+                loginModal.classList.remove('active');
+                loginForm.reset();
+            } else {
+                alert('Invalid email or password');
+            }
+        });
+
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            
+            // Simple validation
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (sampleUsers.some(u => u.email === email)) {
+                alert('Email already exists');
+                return;
+            }
+            
+            const newUser = {
+                id: sampleUsers.length + 1,
+                name,
+                email,
+                password
+            };
+            
+            sampleUsers.push(newUser);
+            login(newUser);
+            signupModal.classList.remove('active');
+            signupForm.reset();
+        });
+
+        // Task list event delegation
+        taskList.addEventListener('click', (e) => {
+            const taskCard = e.target.closest('.task-card');
+            if (!taskCard) return;
+            
+            const taskId = parseInt(taskCard.dataset.taskId);
+            
+            // Checkbox click
+            if (e.target.classList.contains('task-checkbox')) {
+                const taskIndex = tasks.findIndex(t => t.id === taskId);
+                if (taskIndex !== -1) {
+                    tasks[taskIndex].completed = e.target.checked;
+                    renderTasks();
+                }
+            }
+            
+            // Edit button click
+            if (e.target.textContent === '✏️') {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    editingTaskId = taskId;
+                    taskModalTitle.textContent = 'Edit Task';
+                    document.getElementById('taskTitle').value = task.title;
+                    document.getElementById('taskDescription').value = task.description || '';
+                    document.getElementById('taskDueDate').value = task.dueDate || '';
+                    document.getElementById('taskPriority').value = task.priority;
+                    
+                    // Clear all category checkboxes
+                    document.querySelectorAll('input[name="category"]').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    
+                    // Check the task's categories
+                    task.categories?.forEach(category => {
+                        const checkbox = document.querySelector(`input[name="category"][value="${category}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    
+                    taskModal.classList.add('active');
+                }
+            }
+            
+            // Delete button click
+            if (e.target.textContent === '🗑️') {
+                if (confirm('Are you sure you want to delete this task?')) {
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    renderTasks();
+                }
+            }
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === taskModal) {
+                closeTaskModal();
+            }
+            if (e.target === loginModal) {
+                loginModal.classList.remove('active');
+            }
+            if (e.target === signupModal) {
+                signupModal.classList.remove('active');
+            }
+        });
+
+        // Functions
+        function closeTaskModal() {
+            taskModal.classList.remove('active');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function login(user) {
+            currentUser = user;
+            authButtons.classList.add('hidden');
+            loggedInUser.classList.remove('hidden');
+            userAvatar.textContent = user.name.charAt(0).toUpperCase();
+            userName.textContent = user.name;
+            
+            // Filter tasks for the logged in user
+            renderTasks();
+        }
+
+        function logout() {
+            currentUser = null;
+            authButtons.classList.remove('hidden');
+            loggedInUser.classList.add('hidden');
+            
+            // Reset filters
+            currentFilter = 'all';
+            currentCategory = null;
+            currentSearch = '';
+            searchInput.value = '';
+            
+            // Reset active filters in UI
+            document.querySelectorAll('#filterList li').forEach(li => {
+                li.classList.remove('active');
+            });
+            document.querySelector('#filterList li[data-filter="all"]').classList.add('active');
+            
+            document.querySelectorAll('.category-tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            
+            renderTasks();
+        }
+
+        function renderTasks() {
+            // Filter tasks based on current user, filter, category, and search
+            let filteredTasks = tasks;
+            
+            // Filter by current user if logged in
+            if (currentUser) {
+                filteredTasks = filteredTasks.filter(task => task.userId === currentUser.id);
+            }
+            
+            // Apply filter
+            if (currentFilter === 'today') {
+                const today = new Date().toISOString().split('T')[0];
+                filteredTasks = filteredTasks.filter(task => task.dueDate === today);
+            } else if (currentFilter === 'important') {
+                filteredTasks = filteredTasks.filter(task => task.priority === 'high');
+            } else if (currentFilter === 'completed') {
+                filteredTasks = filteredTasks.filter(task => task.completed);
+            }
+            
+            // Apply category filter
+            if (currentCategory) {
+                filteredTasks = filteredTasks.filter(task => 
+                    task.categories?.includes(currentCategory)
+                );
+            }
+            
+            // Apply search
+            if (currentSearch) {
+                filteredTasks = filteredTasks.filter(task => 
+                    task.title.toLowerCase().includes(currentSearch) || 
+                    (task.description && task.description.toLowerCase().includes(currentSearch))
+                );
+            }
+            
+            // Render tasks
+            taskList.innerHTML = '';
+            
+            if (filteredTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No tasks found</p>
+                        ${currentUser ? '<button class="btn-primary" id="addFirstTask">Add your first task</button>' : ''}
+                    </div>
+                `;
+                
+                if (currentUser) {
+                    document.getElementById('addFirstTask').addEventListener('click', () => {
+                        addTaskBtn.click();
+                    });
+                }
+                return;
+            }
+            
+            filteredTasks.forEach(task => {
+                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+                let dueDateText = 'No due date';
+                
+                if (dueDate) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    if (dueDate.toISOString().split('T')[0] === today.toISOString().split('T')[0]) {
+                        dueDateText = 'Today';
+                    } else {
+                        dueDateText = dueDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    }
+                }
+                
+                const taskCard = document.createElement('div');
+                taskCard.className = `task-card ${task.completed ? 'completed' : ''}`;
+                taskCard.dataset.taskId = task.id;
+                
+                taskCard.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                    <div class="task-content">
+                        <h3 class="task-title">${task.title}</h3>
+                        ${task.description ? `<p class="task-description">${task.description}</p>` : ''}
+                        <div class="task-meta">
+                            <span class="task-due-date">Due: ${dueDateText}</span>
+                            <span class="task-priority priority-${task.priority}">
+                                ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                            </span>
+                        </div>
+                        ${task.categories?.length ? `
+                            <div class="task-categories" style="margin-top: 0.5rem;">
+                                ${task.categories.map(cat => `
+                                    <span class="category-tag" style="font-size: 0.7rem;">${cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div class="task-actions">
+                        <button>✏️</button>
+                        <button>🗑️</button>
+                    </div>
+                `;
+                
+                taskList.appendChild(taskCard);
+            });
+        }
+
+        // Initialize
+        function init() {
+            // Set theme from localStorage or prefer-color-scheme
+            const savedTheme = localStorage.getItem('theme') || 
+                             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Set active filter
+            document.querySelector('#filterList li[data-filter="all"]').classList.add('active');
+            
+            // Render initial tasks
+            renderTasks();
+        }
+
+        init();
+    </script>
+</body>
+</html>
